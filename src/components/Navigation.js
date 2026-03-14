@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { findPath, generateInstructions, matchDestination } from '../utils/pathfinding';
 import { speak, startListening, vibrate, vibratePatterns, unlockAudio, playSOSBuzzer, startPedometer } from '../utils/speech';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
+import '@tensorflow/tfjs-backend-webgl';
+import '@tensorflow/tfjs-backend-cpu';
 
 
 function Navigation({ currentLocation, onGoHome, onChangeLocation, quickDestination, floorMap }) {
@@ -15,6 +18,11 @@ function Navigation({ currentLocation, onGoHome, onChangeLocation, quickDestinat
   const [showPicker, setShowPicker] = useState(false);
   const [sosActive, setSosActive] = useState(false);
   const [stepCount, setStepCount] = useState(0);
+  const [obstacleDetection, setObstacleDetection] = useState(false);
+  const [obstacleMsg, setObstacleMsg] = useState('');
+  const videoRef2 = useRef(null);
+  const detectionRef = useRef(null);
+  const obstacleActiveRef = useRef(false);
     
 
   useEffect(() => {
@@ -138,9 +146,68 @@ function Navigation({ currentLocation, onGoHome, onChangeLocation, quickDestinat
     exit: '🚪', entrance: '🏛️', corridor: '🚶', room: '📍',
   };
 
+  const startObstacleDetection = async () => {
+    setObstacleDetection(true);
+    obstacleActiveRef.current = true;
+    setObstacleMsg('Loading detector...');
+    speak('Loading obstacle detection.');
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: 320, height: 240 }
+      });
+
+      const video = videoRef2.current;
+      video.srcObject = stream;
+
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().then(resolve);
+        };
+      });
+
+      const model = await cocoSsd.load();
+      speak('Obstacle detection active.');
+      setObstacleMsg('✅ Scanning...');
+
+      const detect = async () => {
+        if (!videoRef2.current || !obstacleActiveRef.current) return;
+        try {
+          const predictions = await model.detect(video);
+          const close = predictions.filter(p => p.bbox[2] * p.bbox[3] > 8000);
+          if (close.length > 0) {
+            const obj = close[0].class;
+            setObstacleMsg(`⚠️ ${obj} detected!`);
+            speak(`Caution! ${obj} ahead.`);
+          } else {
+            setObstacleMsg('✅ Path clear');
+          }
+        } catch (e) {
+          console.log('Detection frame error', e);
+        }
+        detectionRef.current = setTimeout(detect, 2500);
+      };
+      detect();
+    } catch (e) {
+      setObstacleMsg('Camera error.');
+      setObstacleDetection(false);
+    }
+  };
+
+  const stopObstacleDetection = () => {
+    setObstacleDetection(false);
+    obstacleActiveRef.current = false;
+    setObstacleMsg('');
+    if (detectionRef.current) clearTimeout(detectionRef.current);
+    if (videoRef2.current && videoRef2.current.srcObject) {
+      videoRef2.current.srcObject.getTracks().forEach(t => t.stop());
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.bgAccent} />
+      <video ref={videoRef2} style={{ position: 'absolute', width: '320px', height: '240px', opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} muted playsInline />
 
       {/* Header */}
       <div className="fade-up" style={styles.header}>
@@ -326,6 +393,29 @@ function Navigation({ currentLocation, onGoHome, onChangeLocation, quickDestinat
           </button>
         </div>
       )}
+    
+    
+    {/* Obstacle Detection */}
+      <video ref={videoRef2} style={{ display: 'none' }} muted playsInline />
+      <button
+        style={{
+          ...styles.obstacleBtn,
+          backgroundColor: obstacleDetection ? '#f0fdf9' : '#fff',
+          borderColor: obstacleDetection ? '#00c8aa' : '#e4eaf2',
+        }}
+        onClick={obstacleDetection ? stopObstacleDetection : startObstacleDetection}
+      >
+        <span style={{ fontSize: '22px' }}>{obstacleDetection ? '🟢' : '⚫'}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+          <span style={{ fontSize: '15px', fontWeight: '700', color: '#0f1b2d' }}>
+            {obstacleDetection ? 'Obstacle Detection ON' : 'Obstacle Detection OFF'}
+          </span>
+          <span style={{ fontSize: '12px', color: '#7a8fa6' }}>
+            {obstacleMsg || 'Tap to enable camera detection'}
+          </span>
+        </div>
+      </button>
+
 
         {/* SOS Button */}
       <button
@@ -755,6 +845,18 @@ const styles = {
     fontSize: '12px',
     color: '#7a8fa6',
     fontWeight: '500',
+  },
+  obstacleBtn: {
+    width: '100%',
+    padding: '14px 16px',
+    border: '1.5px solid',
+    borderRadius: '14px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 8px rgba(15,27,45,0.06)',
   },
 };
 

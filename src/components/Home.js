@@ -4,7 +4,7 @@ import { speak } from '../utils/speech';
 function Home({ onStart, currentLocation, college, onSwitchCollege }) {
   useEffect(() => {
     const timer = setTimeout(() => {
-      speak('Welcome to EchoWave. Tap scan to begin.');
+      speak('Welcome to EchoWave. Tap Start Navigation to begin.');
     }, 600);
     return () => clearTimeout(timer);
   }, []);

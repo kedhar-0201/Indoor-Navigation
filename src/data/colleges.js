@@ -224,7 +224,7 @@ const colleges = {
   pes: {
     id: "pes",
     name: "PES University",
-    shortName: "PES",
+    shortName: "PESU",
     location: "100 Feet Ring Rd, Bangalore",
     emoji: "🎓",
     color: "#8b4513",
