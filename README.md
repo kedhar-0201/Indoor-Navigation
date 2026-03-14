@@ -1,70 +1,131 @@
-# Getting Started with Create React App
+# EchoWave 🔊
+### Indoor Navigation for the Visually Impaired
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> *"253 million people are visually impaired worldwide. Zero reliable indoor navigation solutions exist — until now."*
 
-## Available Scripts
+EchoWave is an AI-powered, audio-first indoor navigation web app built for visually impaired users. No app installation needed — runs directly in any mobile browser.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🌐 Live Demo
+**[echowave-peach.vercel.app](https://echowave-peach.vercel.app)**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🎯 Problem Statement
+GPS works outdoors but completely fails indoors. Visually impaired individuals have no reliable way to navigate inside hospitals, colleges, malls, or any large building. EchoWave solves this with zero infrastructure requirements.
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ✨ Features
 
-### `npm run build`
+### 🧭 Core Navigation
+- **A* Pathfinding** — Optimal route calculation between any two points
+- **Turn-by-turn voice guidance** — Every instruction spoken aloud
+- **Stair/Elevator awareness** — Say "avoid stairs" to reroute automatically
+- **Multi-college support** — BMSCE, RVCE, MSRIT, IIIT-B, PES, IISc
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 📍 Hybrid Positioning
+- **QR Code scanning** — Instant location detection at anchor points
+- **OCR Sign Reading** — Reads existing building signs using Tesseract.js (offline)
+- **Voice location input** — Say your location out loud
+- **Manual selection** — Fallback grid of all locations
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🎙️ Voice Interface
+- **Speech recognition** — Natural language destination input
+- **Text-to-speech** — All directions spoken automatically
+- **Voice commands** — "avoid stairs", "repeat", "next step", "go home"
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 🛡️ Safety Features
+- **Emergency SOS** — One tap announces your exact location out loud with alarm
+- **Obstacle Detection** — Real-time object detection via TensorFlow.js COCO-SSD
+- **Haptic feedback** — Vibration on arrival
 
-### `npm run eject`
+### 📊 Accessibility
+- **Pedometer** — Live step counter via accelerometer
+- **Audio-first design** — Fully usable without looking at screen
+- **Offline capable** — Core navigation works without internet
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🛠️ Tech Stack
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| Technology | Purpose |
+|---|---|
+| React.js | Frontend framework |
+| A* Algorithm (custom JS) | Pathfinding |
+| Web Speech API | TTS + Voice recognition |
+| jsQR | QR code decoding |
+| Tesseract.js | Offline OCR sign reading |
+| TensorFlow.js + COCO-SSD | Real-time obstacle detection |
+| DeviceMotion API | Step counting via accelerometer |
+| Web Audio API | SOS buzzer generation |
+| Vibration API | Haptic feedback |
+| Vercel | Deployment |
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## 🏗️ Architecture
+```
+User
+ ├── QR Code → jsQR → Location ID
+ ├── Sign → Tesseract.js OCR → Location ID  
+ └── Voice → Web Speech API → Location ID
+          ↓
+    A* Pathfinding (JSON Graph)
+          ↓
+    Turn-by-turn Instructions
+          ↓
+    Web Speech API (TTS) → Audio Output
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🚀 Getting Started
 
-### Code Splitting
+### Prerequisites
+- Node.js v16+
+- npm
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Installation
+```bash
+git clone https://github.com/kedhar-0201/Indoor-Navigation.git
+cd Indoor-Navigation
+npm install
+npm start
+```
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Open [http://localhost:3000](http://localhost:3000) in Safari (recommended for best voice support).
 
 ### Deployment
+```bash
+vercel build --prod
+vercel deploy --prebuilt --prod
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 🗺️ Adding a New College
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Edit `src/data/colleges.js` and add a new entry:
+```javascript
+your_college: {
+  id: "your_college",
+  name: "Your College Name",
+  shortName: "YCN",
+  nodes: { ... },
+  edges: [ ... ],
+  shortcuts: { ... }
+}
+```
+
+---
+
+## 👥 Team
+
+Built by **Team Hydreigon** at the hackathon.
+
+---
+
+## 📄 License
+MIT
