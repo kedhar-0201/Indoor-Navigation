@@ -22,12 +22,12 @@ function Splash({ onDone }) {
         <p style={styles.tagline}>Indoor Navigation for Everyone</p>
         <div style={styles.statsRow}>
           <div style={styles.stat}>
-            <span style={styles.statNum}>253M</span>
-            <span style={styles.statLabel}>Visually Impaired Worldwide</span>
+            <span style={styles.statNum}>295M</span>
+            <span style={styles.statLabel}>Moderate to Severe Visually Impaired Worldwide</span>
           </div>
           <div style={styles.statDivider} />
           <div style={styles.stat}>
-            <span style={styles.statNum}>0</span>
+            <span style={styles.statNum}>0*</span>
             <span style={styles.statLabel}>Reliable Indoor Navigation Solutions</span>
             <span style={styles.statNot}>— not anymore.</span>
           </div>

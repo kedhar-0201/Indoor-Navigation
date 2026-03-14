@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "EchoWave",
+  "name": "EchoWave - Indoor Navigation for the Visually Impaired",
   "icons": [
     {
       "src": "favicon.ico",

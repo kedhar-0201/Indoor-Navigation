@@ -55,6 +55,11 @@ function App() {
           onStart={handleStart}
           currentLocation={currentLocation}
           college={selectedCollege}
+          onSwitchCollege={() => {
+            setSelectedCollege(null);
+            setCurrentLocation(null);
+            setScreen('college');
+          }}
         />
       )}
       {screen === 'scanner' && floorMap && (

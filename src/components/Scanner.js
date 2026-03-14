@@ -11,6 +11,7 @@ function Scanner({ onLocationSet, onGoHome, quickDestination, floorMap }) {
   const [mode, setMode] = useState('qr');
   const [statusMsg, setStatusMsg] = useState('Point camera at a QR code');
   const [ocrResult, setOcrResult] = useState('');
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     startCamera();
@@ -136,6 +137,55 @@ function Scanner({ onLocationSet, onGoHome, quickDestination, floorMap }) {
     speak('Could not match sign to a known location. Please select manually.');
   };
 
+  const handleVoiceLocation = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setStatusMsg('Voice not supported. Use manual selection.');
+      return;
+    }
+    setIsListening(true);
+    setStatusMsg('Listening... say your location');
+    speak('Say your current location.');
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onresult = (e) => {
+      const input = e.results[0][0].transcript.toLowerCase().trim();
+      setIsListening(false);
+      setStatusMsg(`You said: "${input}"`);
+
+      // Check shortcuts first
+      if (floorMap.shortcuts[input]) {
+        const node = floorMap.nodes[floorMap.shortcuts[input]];
+        speak(`Location set to ${node.label}`);
+        setTimeout(() => onLocationSet(node.id, quickDestination), 1000);
+        return;
+      }
+
+      // Then check node labels
+      for (const node of Object.values(floorMap.nodes)) {
+        if (node.label.toLowerCase().includes(input) || input.includes(node.label.toLowerCase())) {
+          speak(`Location set to ${node.label}`);
+          setTimeout(() => onLocationSet(node.id, quickDestination), 1000);
+          return;
+        }
+      }
+
+      setStatusMsg(`Could not find "${input}". Try again or select manually.`);
+      speak('Could not find that location. Please try again or select manually.');
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setStatusMsg('Could not hear you. Try again.');
+    };
+
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -159,6 +209,16 @@ function Scanner({ onLocationSet, onGoHome, quickDestination, floorMap }) {
         </button>
       </div>
 
+      <button
+        style={{
+          ...styles.captureBtn,
+          backgroundColor: isListening ? '#00c8aa' : '#0f1b2d',
+        }}
+        onClick={handleVoiceLocation}
+      >
+        {isListening ? '🔴 Listening...' : '🎙️ Say Your Location'}
+      </button>
+
       <div style={styles.viewfinder}>
         <video ref={videoRef} style={styles.video} muted playsInline />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -180,6 +240,17 @@ function Scanner({ onLocationSet, onGoHome, quickDestination, floorMap }) {
           📸 Capture & Read Sign
         </button>
       )}
+
+      <button
+        style={{
+          ...styles.captureBtn,
+          backgroundColor: isListening ? '#00c8aa' : '#0f1b2d',
+          marginTop: '-6px',
+        }}
+        onClick={handleVoiceLocation}
+      >
+        {isListening ? '🔴 Listening...' : '🎙️ Say Your Location'}
+      </button>
 
       <div style={styles.manualArea}>
         <p style={styles.manualTitle}>SELECT LOCATION MANUALLY</p>

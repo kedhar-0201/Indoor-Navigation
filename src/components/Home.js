@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { speak } from '../utils/speech';
 
-function Home({ onStart, currentLocation, college }) {
+function Home({ onStart, currentLocation, college, onSwitchCollege }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       speak('Welcome to EchoWave. Tap scan to begin.');
@@ -95,6 +95,10 @@ function Home({ onStart, currentLocation, college }) {
       </div>
 
       
+
+    <button style={styles.switchBtn} onClick={(e) => { e.stopPropagation(); onSwitchCollege(); }}>
+        🏫 Switch College
+      </button>
 
     </div>
   );
@@ -270,6 +274,17 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '10px',
+  },
+  switchBtn: {
+    width: '100%',
+    padding: '14px',
+    backgroundColor: 'transparent',
+    border: '1.5px solid #e4eaf2',
+    borderRadius: '14px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#7a8fa6',
   },
   quickCard: {
     padding: '16px 8px',
